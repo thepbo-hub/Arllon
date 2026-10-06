@@ -1,0 +1,6 @@
+{
+  "name": "Arllon Fernandes Barbearia",
+  "description": "Biosite oficial da Arllon Fernandes Barbearia: agendamento online, WhatsApp, Instagram e localização no Rio Comprido, Rio de Janeiro.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
