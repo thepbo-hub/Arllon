@@ -3,17 +3,25 @@ import { BARBERSHOP_CONFIG } from '../config/barbershop.ts';
 import { Calendar3DIcon } from './icons3d/Calendar3DIcon.tsx';
 import { Whatsapp3DIcon } from './icons3d/Whatsapp3DIcon.tsx';
 import { Instagram3DIcon } from './icons3d/Instagram3DIcon.tsx';
-import { ExternalLink, Sparkles, Clock, CheckCircle2 } from 'lucide-react';
+import { ExternalLink, Sparkles, Clock, CheckCircle2, ChevronDown } from 'lucide-react';
 
-export function SlideLinks() {
+interface SlideLinksProps {
+  onScrollToLocation?: () => void;
+}
+
+export function SlideLinks({ onScrollToLocation }: SlideLinksProps) {
   const { booking, whatsapp, instagram } = BARBERSHOP_CONFIG.links;
 
   return (
-    <div className="flex flex-col items-center justify-between h-full w-full px-4 sm:px-6 py-6 sm:py-7 select-none">
-      {/* Header of Slide 2 */}
+    <section
+      id="links"
+      className="relative flex flex-col items-center justify-between min-h-[90vh] sm:min-h-[85vh] w-full px-4 sm:px-6 py-8 sm:py-12 select-none"
+    >
+      {/* Header of Section 2 */}
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 15 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.5 }}
         className="text-center w-full max-w-md"
       >
@@ -23,25 +31,26 @@ export function SlideLinks() {
         <h2 className="font-serif-brand text-2xl sm:text-3xl font-bold text-white tracking-tight">
           Agendamento & Contatos
         </h2>
-        <p className="text-xs sm:text-sm text-[#C9CED6] mt-1">
-          Toque para agendar online ou falar diretamente com a gente.
+        <p className="text-xs sm:text-sm text-[#C9CED6] mt-1 max-w-xs mx-auto">
+          Toque no botão para agendar online ou falar diretamente com a nossa equipe.
         </p>
       </motion.div>
 
       {/* 3 Large Touch-Friendly Buttons */}
-      <div className="flex flex-col gap-3.5 sm:gap-4 w-full max-w-md my-auto py-2">
+      <div className="flex flex-col gap-4 sm:gap-4.5 w-full max-w-md my-auto py-5">
         {/* 1) AGENDAMENTO: BOTÃO PRINCIPAL COM DESTAQUE MÁXIMO */}
         <motion.a
           href={booking.url}
           target="_blank"
           rel="noopener noreferrer"
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.5, delay: 0.1 }}
           whileHover={{ scale: 1.025, y: -2 }}
           whileTap={{ scale: 0.98 }}
           className="relative group block w-full p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#173F8A] via-[#245EC4] to-[#1E4FA3] text-white border-2 border-white/60 shadow-[0_12px_32px_rgba(30,79,163,0.5)] overflow-hidden cursor-pointer"
-          style={{ minHeight: '88px' }}
+          style={{ minHeight: '92px' }}
         >
           {/* Shimmer sweep effect */}
           <div className="animate-shimmer" />
@@ -58,7 +67,7 @@ export function SlideLinks() {
             {/* Content Text */}
             <div className="flex-1 text-left min-w-0">
               <div className="flex items-center gap-1.5 mb-1">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-bold uppercase tracking-wider text-white border border-white/30 backdrop-blur-sm">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/20 text-[10px] font-bold uppercase tracking-wider text-white border border-white/30 backdrop-blur-sm">
                   <Sparkles className="w-2.5 h-2.5 text-yellow-300" />
                   {booking.badgeText}
                 </span>
@@ -84,12 +93,13 @@ export function SlideLinks() {
           target="_blank"
           rel="noopener noreferrer"
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           whileHover={{ scale: 1.02, y: -2 }}
           whileTap={{ scale: 0.98 }}
-          className="relative group block w-full p-3.5 sm:p-4 rounded-2xl glass-panel hover:bg-[#0c244f]/80 text-white border border-[#25D366]/30 hover:border-[#25D366]/70 shadow-[0_8px_24px_rgba(3,10,24,0.45)] hover:shadow-[0_10px_28px_rgba(37,211,102,0.2)] transition-all cursor-pointer"
-          style={{ minHeight: '74px' }}
+          className="relative group block w-full p-4 sm:p-4.5 rounded-2xl glass-panel hover:bg-[#0c244f]/80 text-white border border-[#25D366]/30 hover:border-[#25D366]/70 shadow-[0_8px_24px_rgba(3,10,24,0.45)] hover:shadow-[0_10px_28px_rgba(37,211,102,0.2)] transition-all cursor-pointer"
+          style={{ minHeight: '78px' }}
         >
           <div className="flex items-center justify-between gap-3.5 sm:gap-4">
             {/* 3D WhatsApp Icon */}
@@ -125,12 +135,13 @@ export function SlideLinks() {
           target="_blank"
           rel="noopener noreferrer"
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.5, delay: 0.3 }}
           whileHover={{ scale: 1.02, y: -2 }}
           whileTap={{ scale: 0.98 }}
-          className="relative group block w-full p-3.5 sm:p-4 rounded-2xl glass-panel hover:bg-[#0c244f]/80 text-white border border-[#E1306C]/30 hover:border-[#E1306C]/70 shadow-[0_8px_24px_rgba(3,10,24,0.45)] hover:shadow-[0_10px_28px_rgba(225,48,108,0.2)] transition-all cursor-pointer"
-          style={{ minHeight: '74px' }}
+          className="relative group block w-full p-4 sm:p-4.5 rounded-2xl glass-panel hover:bg-[#0c244f]/80 text-white border border-[#E1306C]/30 hover:border-[#E1306C]/70 shadow-[0_8px_24px_rgba(3,10,24,0.45)] hover:shadow-[0_10px_28px_rgba(225,48,108,0.2)] transition-all cursor-pointer"
+          style={{ minHeight: '78px' }}
         >
           <div className="flex items-center justify-between gap-3.5 sm:gap-4">
             {/* 3D Instagram Icon */}
@@ -161,23 +172,30 @@ export function SlideLinks() {
         </motion.a>
       </div>
 
-      {/* Bottom Trust/Security Note */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-        className="flex items-center justify-center gap-4 text-[11px] text-[#C9CED6]/80 pt-2"
-      >
-        <span className="flex items-center gap-1">
-          <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
-          Confirmação Imediata
-        </span>
-        <span aria-hidden="true">•</span>
-        <span className="flex items-center gap-1">
-          <Clock className="w-3.5 h-3.5 text-blue-400" />
-          Atendimento com Hora Marcada
-        </span>
-      </motion.div>
-    </div>
+      {/* Trust & Next Section Trigger */}
+      <div className="w-full max-w-md flex flex-col items-center gap-3 pt-2">
+        <div className="flex items-center justify-center gap-4 text-[11px] text-[#C9CED6]/80">
+          <span className="flex items-center gap-1">
+            <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
+            Confirmação Imediata
+          </span>
+          <span aria-hidden="true">•</span>
+          <span className="flex items-center gap-1">
+            <Clock className="w-3.5 h-3.5 text-blue-400" />
+            Atendimento com Hora Marcada
+          </span>
+        </div>
+
+        {onScrollToLocation && (
+          <button
+            onClick={onScrollToLocation}
+            className="flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs text-[#C9CED6] hover:text-white transition-colors cursor-pointer group mt-1"
+          >
+            <span>Ver localização & como chegar</span>
+            <ChevronDown className="w-3.5 h-3.5 text-[#3B82F6] group-hover:translate-y-0.5 transition-transform" />
+          </button>
+        )}
+      </div>
+    </section>
   );
 }

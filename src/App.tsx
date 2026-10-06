@@ -3,114 +3,59 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useState, useEffect, useRef } from 'react';
 import { SlidePresentation } from './components/SlidePresentation.tsx';
 import { SlideLinks } from './components/SlideLinks.tsx';
 import { SlideLocation } from './components/SlideLocation.tsx';
-import { CarouselControls } from './components/CarouselControls.tsx';
+import { TopNavBar } from './components/TopNavBar.tsx';
 import { ShareModal } from './components/ShareModal.tsx';
 import { BARBERSHOP_CONFIG } from './config/barbershop.ts';
-
-const TOTAL_SLIDES = 3;
-
-// Directional slide transition variants
-const slideVariants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? 80 : -80,
-    opacity: 0,
-    scale: 0.98,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-    scale: 1,
-    transition: {
-      x: { type: 'spring' as const, stiffness: 320, damping: 30 },
-      opacity: { duration: 0.28 },
-      scale: { duration: 0.28 },
-    },
-  },
-  exit: (direction: number) => ({
-    x: direction < 0 ? 80 : -80,
-    opacity: 0,
-    scale: 0.98,
-    transition: {
-      x: { type: 'spring' as const, stiffness: 320, damping: 30 },
-      opacity: { duration: 0.2 },
-    },
-  }),
-};
+import { CalendarCheck } from 'lucide-react';
 
 export default function App() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [direction, setDirection] = useState(0);
+  const [activeSection, setActiveSection] = useState('inicio');
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [showFloatingBooking, setShowFloatingBooking] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Touch swipe support
-  const touchStartXRef = useRef<number | null>(null);
-  const touchStartYRef = useRef<number | null>(null);
-
-  const goToSlide = useCallback((index: number) => {
-    if (index === currentSlide) return;
-    setDirection(index > currentSlide ? 1 : -1);
-    setCurrentSlide(index);
-    if (typeof window !== 'undefined' && 'vibrate' in navigator) {
-      try {
-        navigator.vibrate(10);
-      } catch {
-        // ignore
-      }
+  // Smooth scroll to target section
+  const scrollToSection = (sectionId: string) => {
+    const el = document.getElementById(sectionId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [currentSlide]);
+  };
 
-  const handleNext = useCallback(() => {
-    if (currentSlide < TOTAL_SLIDES - 1) {
-      goToSlide(currentSlide + 1);
-    }
-  }, [currentSlide, goToSlide]);
-
-  const handlePrev = useCallback(() => {
-    if (currentSlide > 0) {
-      goToSlide(currentSlide - 1);
-    }
-  }, [currentSlide, goToSlide]);
-
-  // Keyboard navigation
+  // ScrollSpy to track active section while scrolling with finger or mouse
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') {
-        handleNext();
-      } else if (e.key === 'ArrowLeft') {
-        handlePrev();
+    const handleScroll = () => {
+      const scrollPos = window.scrollY || document.documentElement.scrollTop;
+
+      // Show floating booking button when scrolled past top section
+      if (scrollPos > 380) {
+        setShowFloatingBooking(true);
+      } else {
+        setShowFloatingBooking(false);
+      }
+
+      const sections = ['inicio', 'links', 'localizacao'];
+      const triggerOffset = window.innerHeight * 0.35;
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sections[i]);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= triggerOffset) {
+            setActiveSection(sections[i]);
+            break;
+          }
+        }
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNext, handlePrev]);
 
-  // Touch gesture handlers
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartXRef.current = e.touches[0].clientX;
-    touchStartYRef.current = e.touches[0].clientY;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartXRef.current === null || touchStartYRef.current === null) return;
-    const deltaX = e.changedTouches[0].clientX - touchStartXRef.current;
-    const deltaY = e.changedTouches[0].clientY - touchStartYRef.current;
-
-    // Trigger horizontal swipe only if horizontal movement is dominant
-    if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4) {
-      if (deltaX < 0) {
-        handleNext();
-      } else {
-        handlePrev();
-      }
-    }
-    touchStartXRef.current = null;
-    touchStartYRef.current = null;
-  };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleShareClick = () => {
     if (typeof navigator !== 'undefined' && navigator.share) {
@@ -129,59 +74,91 @@ export default function App() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-center barber-texture barber-fine-lines overflow-x-hidden p-0 sm:p-4 md:p-6 lg:p-8">
+    <div
+      ref={scrollContainerRef}
+      className="relative min-h-screen w-full barber-texture barber-fine-lines text-white selection:bg-[#1E4FA3] selection:text-white flex flex-col items-center justify-start overflow-x-hidden scroll-smooth"
+    >
       {/* Decorative Vintage Barber Architectural Vignette */}
       <div
         className="fixed inset-0 pointer-events-none z-0 opacity-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-700/15 via-transparent to-black/60"
         aria-hidden="true"
       />
 
-      {/* Main Biosite Device Canvas (Mobile-first card, responsive up to desktop) */}
-      <main className="relative z-10 w-full max-w-[440px] h-[100dvh] sm:h-[840px] sm:max-h-[92vh] flex flex-col justify-between bg-gradient-to-b from-[#091B3D] via-[#0A1F44] to-[#051128] sm:rounded-[36px] sm:border sm:border-white/20 sm:shadow-[0_24px_64px_-12px_rgba(1,6,18,0.85),0_0_0_1px_rgba(255,255,255,0.06)_inset] overflow-hidden">
-        {/* Top Hairline Ambient Light bar on device */}
-        <div className="absolute top-0 left-1/4 right-1/4 h-[1.5px] bg-gradient-to-r from-transparent via-[#3B82F6] to-transparent opacity-80" />
-
-        {/* Carousel Header & Tabs */}
-        <CarouselControls
-          currentSlide={currentSlide}
-          totalSlides={TOTAL_SLIDES}
-          onPrev={handlePrev}
-          onNext={handleNext}
-          onSelectSlide={goToSlide}
+      {/* Main Container - Responsive phone canvas on desktop, 100% full width on mobile */}
+      <div className="relative z-10 w-full max-w-[480px] min-h-screen flex flex-col sm:my-6 sm:rounded-[36px] sm:border sm:border-white/15 sm:shadow-[0_24px_64px_-12px_rgba(1,6,18,0.85),0_0_0_1px_rgba(255,255,255,0.06)_inset] sm:bg-gradient-to-b sm:from-[#081836] sm:via-[#0A1F44] sm:to-[#051126] transition-all">
+        
+        {/* Sticky Top Navigation Bar with ScrollSpy tabs */}
+        <TopNavBar
+          activeSection={activeSection}
+          onNavigate={scrollToSection}
           onShare={handleShareClick}
         />
 
-        {/* Central Slide Content Area with Swipe Gesture Detection */}
-        <div
-          className="relative flex-1 w-full overflow-hidden touch-pan-y"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
-          <AnimatePresence initial={false} custom={direction} mode="wait">
-            <motion.div
-              key={currentSlide}
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              className="absolute inset-0 w-full h-full"
-            >
-              {currentSlide === 0 && (
-                <SlidePresentation
-                  onGoToLinks={() => goToSlide(1)}
-                  onGoToBooking={() => {
-                    // Open booking link directly as user requested
-                    window.open(BARBERSHOP_CONFIG.links.booking.url, '_blank', 'noopener,noreferrer');
-                  }}
-                />
-              )}
-              {currentSlide === 1 && <SlideLinks />}
-              {currentSlide === 2 && <SlideLocation />}
-            </motion.div>
-          </AnimatePresence>
+        {/* Section 1: Apresentação */}
+        <SlidePresentation
+          onScrollToLinks={() => scrollToSection('links')}
+          onGoToBooking={() => {
+            window.open(BARBERSHOP_CONFIG.links.booking.url, '_blank', 'noopener,noreferrer');
+          }}
+        />
+
+        {/* Subtle Ornamental Section Separator */}
+        <div className="w-full flex items-center justify-center gap-3 px-8 opacity-40 py-2">
+          <span className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#C9CED6]" />
+          <span className="w-1.5 h-1.5 rotate-45 border border-[#C9CED6] bg-[#1E4FA3]" />
+          <span className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#C9CED6]" />
         </div>
-      </main>
+
+        {/* Section 2: Links & Contato */}
+        <SlideLinks
+          onScrollToLocation={() => scrollToSection('localizacao')}
+        />
+
+        {/* Subtle Ornamental Section Separator */}
+        <div className="w-full flex items-center justify-center gap-3 px-8 opacity-40 py-2">
+          <span className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#C9CED6]" />
+          <span className="w-1.5 h-1.5 rotate-45 border border-[#C9CED6] bg-[#1E4FA3]" />
+          <span className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#C9CED6]" />
+        </div>
+
+        {/* Section 3: Localização & Mapa */}
+        <SlideLocation
+          onScrollToTop={() => scrollToSection('inicio')}
+        />
+
+        {/* Website Footer */}
+        <footer className="w-full py-6 px-6 text-center border-t border-white/10 mt-4">
+          <div className="flex flex-col items-center gap-2">
+            <p className="font-serif-brand text-sm font-semibold text-white tracking-wide">
+              {BARBERSHOP_CONFIG.name}
+            </p>
+            <p className="text-[11px] text-[#C9CED6]/70 leading-relaxed max-w-xs">
+              {BARBERSHOP_CONFIG.taglines.primary}
+            </p>
+            <p className="text-[10px] text-[#C9CED6]/50 uppercase tracking-widest mt-2">
+              © {new Date().getFullYear()} • Todos os direitos reservados
+            </p>
+          </div>
+        </footer>
+      </div>
+
+      {/* Floating Quick Action Button when scrolling */}
+      {showFloatingBooking && (
+        <aside
+          aria-label="Ações rápidas"
+          className="fixed bottom-4 right-4 z-40 sm:bottom-6 sm:right-6 animate-in fade-in slide-in-from-bottom-4 duration-300"
+        >
+          <a
+            href={BARBERSHOP_CONFIG.links.booking.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-[#1E4FA3] to-[#2563EB] text-white font-semibold text-xs shadow-[0_8px_20px_rgba(30,79,163,0.6)] border border-white/40 hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-md"
+          >
+            <CalendarCheck className="w-4 h-4" />
+            <span>Agendar</span>
+          </a>
+        </aside>
+      )}
 
       {/* Share Modal Dialog */}
       <ShareModal
